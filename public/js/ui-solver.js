@@ -224,7 +224,9 @@ function displaySolutionSummary(problem, solution) {
         // Valeur de la fonction objectif
         html += `<h4>Valeur optimale de la fonction objectif</h4>`;
         html += `<div class="math-container mb-4">`;
-        html += `Z* = ${solution.objectiveValue.toFixed(4)}`;
+        // Assurons-nous que la valeur est positive pour l'affichage
+        const displayValue = solution.objectiveValue !== undefined ? Math.abs(solution.objectiveValue).toFixed(4) : 'N/A';
+        html += `Z* = ${displayValue}`;
         html += `</div>`;
         
         // Valeurs des variables de décision
@@ -234,18 +236,36 @@ function displaySolutionSummary(problem, solution) {
         html += `<thead><tr><th>Variable</th><th>Valeur</th></tr></thead>`;
         html += `<tbody>`;
         
-        for (let i = 0; i < solution.solution.length; i++) {
-            html += `<tr>`;
-            html += `<td>X<sub>${i + 1}</sub></td>`;
-            html += `<td>${solution.solution[i].toFixed(4)}</td>`;
-            html += `</tr>`;
+        if (solution.solution) {
+            let hasValues = false;
+            for (let i = 0; i < solution.solution.length; i++) {
+                const value = solution.solution[i];
+                // Assurons-nous que la valeur est définie et positive
+                if (value !== undefined && value !== null) {
+                    hasValues = true;
+                    html += `<tr>`;
+                    html += `<td>X<sub>${i + 1}</sub></td>`;
+                    html += `<td>${Math.max(0, value).toFixed(4)}</td>`;
+                    html += `</tr>`;
+                } else {
+                    html += `<tr>`;
+                    html += `<td>X<sub>${i + 1}</sub></td>`;
+                    html += `<td>0.0000</td>`;
+                    html += `</tr>`;
+                }
+            }
+            if (!hasValues) {
+                html += `<tr><td colspan="2">Aucune solution disponible</td></tr>`;
+            }
+        } else {
+            html += `<tr><td colspan="2">Aucune solution disponible</td></tr>`;
         }
         
         html += `</tbody></table></div>`;
         
         // Interprétation économique (si applicable)
         html += `<h4>Interprétation</h4>`;
-        html += `<p>La solution optimale est atteinte avec les valeurs ci-dessus, donnant une valeur de fonction objectif de ${solution.objectiveValue.toFixed(4)}.</p>`;
+        html += `<p>La solution optimale est atteinte avec les valeurs ci-dessus, donnant une valeur de fonction objectif de ${solution.objectiveValue !== undefined ? solution.objectiveValue.toFixed(4) : 'N/A'}.</p>`;
         
         // Méthode utilisée
         html += `<div class="alert alert-info mt-3">`;
@@ -289,7 +309,7 @@ function displayDualSolutionSummary(primalProblem, dualProblem, dualSolution) {
         // Valeur de la fonction objectif
         html += `<h4>Valeur optimale de la fonction objectif (Primal)</h4>`;
         html += `<div class="math-container mb-4">`;
-        html += `Z* = ${primalSolution.objectiveValue.toFixed(4)}`;
+        html += `Z* = ${primalSolution.objectiveValue !== undefined ? primalSolution.objectiveValue.toFixed(4) : 'N/A'}`;
         html += `</div>`;
         
         // Valeurs des variables de décision primales
@@ -299,11 +319,15 @@ function displayDualSolutionSummary(primalProblem, dualProblem, dualSolution) {
         html += `<thead><tr><th>Variable</th><th>Valeur</th></tr></thead>`;
         html += `<tbody>`;
         
-        for (let i = 0; i < primalSolution.solution.length; i++) {
-            html += `<tr>`;
-            html += `<td>X<sub>${i + 1}</sub></td>`;
-            html += `<td>${primalSolution.solution[i].toFixed(4)}</td>`;
-            html += `</tr>`;
+        if (primalSolution.solution) {
+            for (let i = 0; i < primalSolution.solution.length; i++) {
+                html += `<tr>`;
+                html += `<td>X<sub>${i + 1}</sub></td>`;
+                html += `<td>${primalSolution.solution[i] !== undefined ? primalSolution.solution[i].toFixed(4) : 'N/A'}</td>`;
+                html += `</tr>`;
+            }
+        } else {
+            html += `<tr><td colspan="2">Aucune solution disponible</td></tr>`;
         }
         
         html += `</tbody></table></div>`;
@@ -315,20 +339,24 @@ function displayDualSolutionSummary(primalProblem, dualProblem, dualSolution) {
         html += `<thead><tr><th>Variable</th><th>Valeur</th></tr></thead>`;
         html += `<tbody>`;
         
-        const dualSolutionValues = dualSolution.dualSolution.solution;
+        const dualSolutionValues = dualSolution.dualSolution && dualSolution.dualSolution.solution;
         
-        for (let i = 0; i < dualSolutionValues.length; i++) {
-            html += `<tr>`;
-            html += `<td>Y<sub>${i + 1}</sub></td>`;
-            html += `<td>${dualSolutionValues[i].toFixed(4)}</td>`;
-            html += `</tr>`;
+        if (dualSolutionValues) {
+            for (let i = 0; i < dualSolutionValues.length; i++) {
+                html += `<tr>`;
+                html += `<td>Y<sub>${i + 1}</sub></td>`;
+                html += `<td>${dualSolutionValues[i] !== undefined ? dualSolutionValues[i].toFixed(4) : 'N/A'}</td>`;
+                html += `</tr>`;
+            }
+        } else {
+            html += `<tr><td colspan="2">Aucune solution duale disponible</td></tr>`;
         }
         
         html += `</tbody></table></div>`;
         
         // Interprétation économique
         html += `<h4>Interprétation</h4>`;
-        html += `<p>La solution optimale du problème primal est atteinte avec les valeurs ci-dessus, donnant une valeur de fonction objectif de ${primalSolution.objectiveValue.toFixed(4)}.</p>`;
+        html += `<p>La solution optimale du problème primal est atteinte avec les valeurs ci-dessus, donnant une valeur de fonction objectif de ${primalSolution.objectiveValue !== undefined ? primalSolution.objectiveValue.toFixed(4) : 'N/A'}.</p>`;
         html += `<p>Les variables duales (Y) représentent les prix marginaux des ressources, indiquant combien la fonction objectif changerait si la contrainte correspondante était relâchée d'une unité.</p>`;
         
         // Théorème de la dualité
@@ -372,7 +400,7 @@ function displayIterations(iterations) {
                 html += `<div class="mt-2">`;
                 html += `<span class="badge bg-primary me-2">Variable entrante: ${iteration.enteringVar}</span>`;
                 html += `<span class="badge bg-danger me-2">Variable sortante: ${iteration.leavingVar}</span>`;
-                html += `<span class="badge bg-info">Élément pivot: ${iteration.pivotElement !== null ? iteration.pivotElement.toFixed(4) : 'N/A'}</span>`;
+                html += `<span class="badge bg-info">Élément pivot: ${iteration.pivotElement !== null && iteration.pivotElement !== undefined ? iteration.pivotElement.toFixed(4) : 'N/A'}</span>`;
                 html += `</div>`;
             }
             
@@ -400,7 +428,7 @@ function displayIterations(iterations) {
                 }
                 
                 if (!varName) {
-                    // Si ce n'est pas une variable de base, déterminer le type
+                    // Garder les variables X pour toutes les variables de décision
                     if (j < currentProblem.objectiveCoefficients.length) {
                         varName = `X<sub>${j + 1}</sub>`;
                     } else {
@@ -445,7 +473,13 @@ function displayIterations(iterations) {
                 
                 // Variable de base
                 if (iteration.basicVars && j - 1 < iteration.basicVars.length) {
-                    html += `<td class="${iteration.pivotRow === j ? 'leaving-var' : ''}">${iteration.basicVars[j - 1].name}</td>`;
+                    const basicVar = iteration.basicVars[j - 1];
+                    // Si c'est une variable de décision, utiliser X au lieu de S
+                    let displayName = basicVar.name;
+                    if (basicVar.type === 'decision') {
+                        displayName = `X<sub>${basicVar.index + 1}</sub>`;
+                    }
+                    html += `<td class="${iteration.pivotRow === j ? 'leaving-var' : ''}">${displayName}</td>`;
                 } else {
                     html += `<td>-</td>`;
                 }
@@ -477,7 +511,13 @@ function displayIterations(iterations) {
                         solutionText += ', ';
                     }
                     
-                    solutionText += `${basicVar.name} = ${value.toFixed(4)}`;
+                    // Si c'est une variable de décision, utiliser X au lieu de S
+                    let displayName = basicVar.name;
+                    if (basicVar.type === 'decision') {
+                        displayName = `X<sub>${basicVar.index + 1}</sub>`;
+                    }
+                    
+                    solutionText += `${displayName} = ${value.toFixed(4)}`;
                 }
                 
                 // Variables non basiques

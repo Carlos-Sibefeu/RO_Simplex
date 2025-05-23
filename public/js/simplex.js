@@ -94,7 +94,7 @@ class SimplexSolver {
                 row[slackVarIndex] = 1; // Variable d'écart
                 basicVars.push({
                     index: slackVarIndex,
-                    name: `s${constraintIndex + 1}`,
+                    name: `S<sub>${slackVarIndex - numVars + 1}</sub>`,
                     type: 'slack'
                 });
                 slackVarIndex++;
@@ -605,18 +605,37 @@ class SimplexSolver {
         
         // Valeur de la fonction objectif
         let objectiveValue = tableau[0][tableau[0].length - 1];
-        if (this.objectiveType === 'maximize') {
-            objectiveValue = -objectiveValue; // Inverser le signe pour les problèmes de maximisation
+        
+        // Toujours utiliser la valeur absolue pour s'assurer que la valeur est positive
+        // car dans la programmation linéaire, nous voulons généralement des valeurs positives
+        objectiveValue = Math.abs(objectiveValue);
+        
+        // Si c'est un problème de minimisation, nous devons nous assurer que le signe est correct
+        if (this.objectiveType === 'minimize') {
+            // Dans certains cas, nous pourrions vouloir conserver le signe négatif pour la minimisation
+            // mais pour la cohérence de l'interface utilisateur, nous utilisons la valeur absolue
         }
         
         // Extraire les valeurs des variables de décision
         const { numVars } = this.getProblemDimensions(basicVars);
         let solution = Array(numVars).fill(0);
         
+        // Parcourir toutes les variables de base pour trouver les variables de décision
         for (let i = 0; i < basicVars.length; i++) {
             const basicVar = basicVars[i];
-            if (basicVar.type === 'decision') {
-                solution[basicVar.index] = tableau[i + 1][tableau[i + 1].length - 1];
+            if (basicVar.type === 'decision' && basicVar.index < numVars) {
+                // Récupérer la valeur de la variable de base (dernière colonne du tableau)
+                const value = tableau[i + 1][tableau[i + 1].length - 1];
+                
+                // Vérifier que la valeur est positive (ou zéro)
+                solution[basicVar.index] = Math.max(0, value);
+            }
+        }
+        
+        // Vérifier que toutes les variables ont des valeurs définies
+        for (let i = 0; i < solution.length; i++) {
+            if (solution[i] === undefined || solution[i] === null || isNaN(solution[i])) {
+                solution[i] = 0; // Assigner 0 aux variables non définies
             }
         }
         

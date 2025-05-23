@@ -289,7 +289,7 @@ function displayVisualization(problem, solution) {
     }
     
     // Ajouter la solution optimale
-    if (solution.feasible && !solution.unbounded) {
+    if (solution.feasible && !solution.unbounded && solution.solution) {
         traces.push({
             x: [solution.solution[0]],
             y: [solution.solution[1]],
@@ -299,14 +299,14 @@ function displayVisualization(problem, solution) {
                 size: 10,
                 symbol: 'star'
             },
-            name: `Solution optimale: (${solution.solution[0].toFixed(2)}, ${solution.solution[1].toFixed(2)})`
+            name: `Solution optimale: (${solution.solution[0] !== undefined ? solution.solution[0].toFixed(2) : 'N/A'}, ${solution.solution[1] !== undefined ? solution.solution[1].toFixed(2) : 'N/A'})`
         });
     }
     
     // Ajouter la fonction objectif
     const [c1, c2] = problem.objectiveCoefficients;
     
-    if (solution.feasible && !solution.unbounded) {
+    if (solution.feasible && !solution.unbounded && solution.objectiveValue !== undefined) {
         // Tracer la ligne de niveau de la fonction objectif passant par la solution optimale
         const z = solution.objectiveValue;
         

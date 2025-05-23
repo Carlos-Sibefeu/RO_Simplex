@@ -51,9 +51,11 @@
                                 
                                 <div class="objective-function mb-3">
                                     <div class="d-flex align-items-center flex-wrap" id="objective-function-container">
-                                        <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
-                                        <span class="me-2">X<sub>1</sub></span>
-                                        <button type="button" class="btn btn-sm btn-success me-3" id="add-objective-var">
+                                        <div class="variable-group d-inline-flex align-items-center me-3 mb-2">
+                                            <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
+                                            <span class="me-2">X<sub>1</sub></span>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success me-2" id="add-objective-var">
                                             <i class="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
@@ -65,8 +67,10 @@
                                 <div id="constraints-container">
                                     <div class="constraint-row mb-3">
                                         <div class="d-flex align-items-center flex-wrap mb-2">
-                                            <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
-                                            <span class="me-2">X<sub>1</sub></span>
+                                            <div class="variable-group d-inline-flex align-items-center me-2">
+                                                <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
+                                                <span class="me-2">X<sub>1</sub></span>
+                                            </div>
                                             <button type="button" class="btn btn-sm btn-success me-2 add-constraint-var">
                                                 <i class="bi bi-plus-lg"></i>
                                             </button>
@@ -76,11 +80,17 @@
                                                 <option value=">=">≥</option>
                                             </select>
                                             <input type="number" class="form-control rhs-input" placeholder="Valeur" step="any">
+                                            <button type="button" class="btn btn-sm btn-danger ms-2 remove-constraint">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary" id="add-constraint">
                                     <i class="bi bi-plus-lg"></i> Ajouter une contrainte
+                                </button>
+                                <button type="button" class="btn btn-outline-danger ms-2" id="remove-all-constraints">
+                                    <i class="bi bi-trash"></i> Supprimer toutes les contraintes
                                 </button>
                             </div>
 
