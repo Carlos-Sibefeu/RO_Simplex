@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résolution de Programmation Linéaire - Méthode du Simplex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Simplex Solver</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="simplex-tab">Méthode du Simplex</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="dual-tab">Méthode de la Dualité</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h2 class="mb-0" id="method-title">Méthode du Simplex Tabulaire</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Simplex Form -->
+                        <div id="simplex-form">
+                            <div class="mb-4">
+                                <h4>Fonction Objectif</h4>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="objectiveType" id="maximize" value="maximize" checked>
+                                    <label class="form-check-label" for="maximize">Maximiser</label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="objectiveType" id="minimize" value="minimize">
+                                    <label class="form-check-label" for="minimize">Minimiser</label>
+                                </div>
+                                
+                                <div class="objective-function mb-3">
+                                    <div class="d-flex align-items-center flex-wrap" id="objective-function-container">
+                                        <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
+                                        <span class="me-2">X<sub>1</sub></span>
+                                        <button type="button" class="btn btn-sm btn-success me-3" id="add-objective-var">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h4>Contraintes</h4>
+                                <div id="constraints-container">
+                                    <div class="constraint-row mb-3">
+                                        <div class="d-flex align-items-center flex-wrap mb-2">
+                                            <input type="number" class="form-control coefficient-input me-2" placeholder="Coefficient" step="any">
+                                            <span class="me-2">X<sub>1</sub></span>
+                                            <button type="button" class="btn btn-sm btn-success me-2 add-constraint-var">
+                                                <i class="bi bi-plus-lg"></i>
+                                            </button>
+                                            <select class="form-select constraint-type me-2">
+                                                <option value="<=">≤</option>
+                                                <option value="=">=</option>
+                                                <option value=">=">≥</option>
+                                            </select>
+                                            <input type="number" class="form-control rhs-input" placeholder="Valeur" step="any">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary" id="add-constraint">
+                                    <i class="bi bi-plus-lg"></i> Ajouter une contrainte
+                                </button>
+                            </div>
+
+                            <div class="mb-4" id="method-selection" style="display: none;">
+                                <h4>Méthode de résolution</h4>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="solutionMethod" id="grand-m" value="grand-m" checked>
+                                    <label class="form-check-label" for="grand-m">Méthode du Grand M</label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="solutionMethod" id="two-phase" value="two-phase">
+                                    <label class="form-check-label" for="two-phase">Méthode des Deux Phases</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-primary" id="solve-button">Résoudre</button>
+                                <button type="button" class="btn btn-outline-secondary" id="reset-button">Réinitialiser</button>
+                                <button type="button" class="btn btn-outline-info" id="convert-dual-button">Convertir en Dual</button>
+                            </div>
+                        </div>
+
+                        <!-- Dual Form (Initially Hidden) -->
+                        <div id="dual-form" style="display: none;">
+                            <div class="alert alert-info">
+                                <p>La méthode de la dualité permet de résoudre un problème de programmation linéaire en le transformant en son dual.</p>
+                                <p>Entrez votre problème primal, puis cliquez sur "Convertir en Dual" pour voir la formulation duale.</p>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-primary" id="solve-dual-button">Résoudre par Dualité</button>
+                                <button type="button" class="btn btn-outline-secondary" id="reset-dual-button">Réinitialiser</button>
+                                <button type="button" class="btn btn-outline-info" id="back-to-primal-button">Retour au Primal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="row mt-4" id="results-section" style="display: none;">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h3 class="mb-0">Résultats</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="resultTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="summary-tab" data-bs-toggle="tab" href="#summary">Résumé</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="iterations-tab" data-bs-toggle="tab" href="#iterations">Itérations</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization">Visualisation</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content p-3" id="resultTabsContent">
+                            <div class="tab-pane fade show active" id="summary">
+                                <div id="solution-summary"></div>
+                            </div>
+                            <div class="tab-pane fade" id="iterations">
+                                <div id="iterations-container"></div>
+                            </div>
+                            <div class="tab-pane fade" id="visualization">
+                                <div id="visualization-container" style="height: 400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2025 Simplex Solver - Résolution de problèmes de programmation linéaire</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="/js/simplex.js"></script>
+    <script src="/js/dual.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/ui-solver.js"></script>
+    <script src="/js/ui-visualization.js"></script>
+</body>
+</html>
