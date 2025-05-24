@@ -231,38 +231,61 @@ function displaySolutionSummary(problem, solution) {
         html += `Z* = ${displayValue}`;
         html += `</div>`;
         
-        // Valeurs des variables de décision
-        html += `<h4>Valeurs des variables de décision</h4>`;
+        // Valeurs des variables finales de la solution réalisable (comme dans displayIterations)
+        html += `<h4>Valeurs des variables</h4>`;
         html += `<div class="table-responsive mb-4">`;
         html += `<table class="table table-striped">`;
         html += `<thead><tr><th>Variable</th><th>Valeur</th></tr></thead>`;
         html += `<tbody>`;
-        
-        if (solution.solution) {
-            let hasValues = false;
-            for (let i = 0; i < solution.solution.length; i++) {
-                const value = solution.solution[i];
-                // Assurons-nous que la valeur est définie et positive
-                if (value !== undefined && value !== null) {
-                    hasValues = true;
+        // On récupère la dernière itération réalisable
+        if (solution.iterations && solution.iterations.length > 0) {
+            const last = solution.iterations[solution.iterations.length - 1];
+            if (last && last.basicVars && last.tableau) {
+                // Variables de base
+                for (let j = 0; j < last.basicVars.length; j++) {
+                    const basicVar = last.basicVars[j];
+                    const value = last.tableau[j + 1][last.tableau[j + 1].length - 1];
+                    let displayName = basicVar.name;
+                    if (basicVar.type === 'decision') {
+                        displayName = `X<sub>${basicVar.index + 1}</sub>`;
+                    }
                     html += `<tr>`;
-                    html += `<td>X<sub>${i + 1}</sub></td>`;
-                    html += `<td>${Math.max(0, value).toFixed(4)}</td>`;
-                    html += `</tr>`;
-                } else {
-                    html += `<tr>`;
-                    html += `<td>X<sub>${i + 1}</sub></td>`;
-                    html += `<td>0.0000</td>`;
+                    html += `<td>${displayName}</td>`;
+                    html += `<td>${value.toFixed(4)}</td>`;
                     html += `</tr>`;
                 }
+                // Variables non basiques
+                const tableau = last.tableau;
+                const nbVars = tableau[0].length - 1;
+                const slackVarCount = last.basicVars.filter(v => v.type === 'slack').length;
+                const surplusVarCount = last.basicVars.filter(v => v.type === 'surplus').length;
+                for (let j = 0; j < nbVars; j++) {
+                    let isBasic = false;
+                    for (const basicVar of last.basicVars) {
+                        if (basicVar.index === j) {
+                            isBasic = true;
+                            break;
+                        }
+                    }
+                    if (!isBasic) {
+                        let varName = '';
+                        if (j < problem.objectiveCoefficients.length) {
+                            varName = `X<sub>${j + 1}</sub>`;
+                        } else if (j < problem.objectiveCoefficients.length + slackVarCount) {
+                            varName = `S<sub>${j - problem.objectiveCoefficients.length + 1}</sub>`;
+                        } else if (j < problem.objectiveCoefficients.length + slackVarCount + surplusVarCount) {
+                            varName = `E<sub>${j - problem.objectiveCoefficients.length - slackVarCount + 1}</sub>`;
+                        } else {
+                            varName = `A<sub>${j - problem.objectiveCoefficients.length - slackVarCount - surplusVarCount + 1}</sub>`;
+                        }
+                        html += `<tr>`;
+                        html += `<td>${varName}</td>`;
+                        html += `<td>0.0000</td>`;
+                        html += `</tr>`;
+                    }
+                }
             }
-            if (!hasValues) {
-                html += `<tr><td colspan="2">Aucune solution disponible</td></tr>`;
-            }
-        } else {
-            html += `<tr><td colspan="2">Aucune solution disponible</td></tr>`;
         }
-        
         html += `</tbody></table></div>`;
         
         // Interprétation économique (si applicable)
