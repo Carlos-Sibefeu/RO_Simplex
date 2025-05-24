@@ -559,6 +559,8 @@ function displayIterations(iterations) {
                     }
                 }
                 
+                solutionText += `, Z = ${tableau[0][tableau[0].length - 1].toFixed(4)}`;
+
                 html += solutionText;
                 html += `</div></div>`;
             }
