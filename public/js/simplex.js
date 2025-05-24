@@ -319,7 +319,7 @@ class SimplexSolver {
         if (index < numVars) {
             return `x${index + 1}`;
         } else if (index < numVars + numSlackVars) {
-            return `s${index - numVars + 1}`;
+            return `X<sub>${index - numVars + 1}</sub>`;
         } else if (index < numVars + numSlackVars + numSurplusVars) {
             return `e${index - numVars - numSlackVars + 1}`;
         } else {

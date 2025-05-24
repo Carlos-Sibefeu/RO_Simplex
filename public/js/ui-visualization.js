@@ -357,8 +357,11 @@ function displayVisualization(problem, solution) {
         hovermode: 'closest',
         showlegend: true,
         legend: {
-            x: 0,
-            y: 1
+            orientation: 'h', // horizontal
+            x: 0.5,           // centré horizontalement
+            y: -0.2,          // sous le graphique
+            xanchor: 'center',
+            yanchor: 'top'
         }
     };
     

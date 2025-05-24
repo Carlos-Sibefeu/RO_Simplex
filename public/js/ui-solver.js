@@ -175,6 +175,7 @@ function displayResults(problem, solution) {
     
     // Afficher la visualisation (uniquement pour les problèmes à 2 variables)
     if (problem.objectiveCoefficients.length === 2) {
+        document.getElementById('visualization-tab').style.display = '';
         displayVisualization(problem, solution);
     } else {
         document.getElementById('visualization-tab').style.display = 'none';
@@ -199,6 +200,7 @@ function displayDualResults(primalProblem, dualProblem, dualSolution) {
     
     // Afficher la visualisation (uniquement pour les problèmes à 2 variables)
     if (primalProblem.objectiveCoefficients.length === 2) {
+        document.getElementById('visualization-tab').style.display = '';
         displayVisualization(primalProblem, dualSolution.primalSolution);
     } else {
         document.getElementById('visualization-tab').style.display = 'none';
