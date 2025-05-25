@@ -50,6 +50,8 @@ class SimplexSolver {
         // Ajuster les coefficients de la fonction objectif selon le type d'objectif
         let objCoeffs = [...objectiveCoefficients];
         if (objectiveType === 'minimize') {
+            // Utiliser la formule: minimizer(Z) = -maximizer(-Z)
+            // Donc on inverse les coefficients pour le minimizer
             objCoeffs = objCoeffs.map(coeff => -coeff);
         }
         
@@ -387,19 +389,15 @@ class SimplexSolver {
      * @param {Array} objectiveCoefficients - Coefficients de la fonction objectif
      * @param {Array} constraints - Tableau des contraintes
      * @param {String} objectiveType - Type d'objectif ('maximize' ou 'minimize')
-     * @param {String} solutionMethod - Méthode de résolution ('standard', 'grand-m', 'two-phase')
+     * @param {String} solutionMethod - Méthode de résolution ('standard', 'grand-m')
      * @returns {Object} - Solution du problème
      */
     solve(objectiveCoefficients, constraints, objectiveType = 'maximize', solutionMethod = 'standard') {
         // Initialiser le tableau du simplex
         let { tableau, basicVars } = this.setupTableau(objectiveCoefficients, constraints, objectiveType, solutionMethod);
         
-        // Résoudre avec la méthode appropriée
-        if (solutionMethod === 'two-phase') {
-            return this.solveTwoPhase(tableau, basicVars, objectiveCoefficients, constraints, objectiveType);
-        } else {
-            return this.solveStandard(tableau, basicVars);
-        }
+        // Résoudre avec la méthode standard
+        return this.solveStandard(tableau, basicVars);
     }
 
     /**
@@ -440,149 +438,7 @@ class SimplexSolver {
         return this.extractSolution(tableau, basicVars, result);
     }
 
-    /**
-     * Résout un problème avec la méthode des deux phases
-     * @param {Array} tableau - Tableau initial du simplex
-     * @param {Array} basicVars - Variables de base initiales
-     * @param {Array} objectiveCoefficients - Coefficients de la fonction objectif originale
-     * @param {Array} constraints - Contraintes originales
-     * @param {String} objectiveType - Type d'objectif original
-     * @returns {Object} - Solution du problème
-     */
-    solveTwoPhase(tableau, basicVars, objectiveCoefficients, constraints, objectiveType) {
-        // Phase 1: Minimiser la somme des variables artificielles
-        let phase1Tableau = JSON.parse(JSON.stringify(tableau));
-        let phase1BasicVars = JSON.parse(JSON.stringify(basicVars));
-        
-        // Modifier la fonction objectif pour la phase 1
-        phase1Tableau[0] = Array(phase1Tableau[0].length).fill(0);
-        
-        // Identifier les variables artificielles
-        const artificialVarIndices = [];
-        for (let i = 0; i < phase1BasicVars.length; i++) {
-            if (phase1BasicVars[i].type === 'artificial') {
-                artificialVarIndices.push(phase1BasicVars[i].index);
-                phase1Tableau[0][phase1BasicVars[i].index] = 1;
-            }
-        }
-        
-        // Éliminer les variables artificielles de la fonction objectif
-        for (let i = 1; i < phase1Tableau.length; i++) {
-            const row = phase1Tableau[i];
-            for (const artificialVarIndex of artificialVarIndices) {
-                if (row[artificialVarIndex] !== 0) {
-                    for (let j = 0; j < row.length; j++) {
-                        phase1Tableau[0][j] -= row[j] * phase1Tableau[0][artificialVarIndex];
-                    }
-                    break;
-                }
-            }
-        }
-        
-        // Résoudre la phase 1
-        let result;
-        let iteration = 0;
-        const maxIterations = 100;
-        
-        do {
-            result = this.iterate(phase1Tableau, phase1BasicVars);
-            phase1Tableau = result.tableau;
-            phase1BasicVars = result.basicVars;
-            iteration++;
-            
-            // Stocker l'itération
-            if (!result.optimal && !result.unbounded) {
-                this.iterations.push({
-                    tableau: JSON.parse(JSON.stringify(phase1Tableau)),
-                    basicVars: JSON.parse(JSON.stringify(phase1BasicVars)),
-                    enteringVar: result.enteringVar,
-                    leavingVar: result.leavingVar,
-                    pivotRow: result.pivotRow,
-                    pivotCol: result.pivotCol,
-                    pivotElement: result.pivotElement,
-                    phase: 1
-                });
-            }
-            
-        } while (!result.optimal && !result.unbounded && iteration < maxIterations);
-        
-        // Vérifier si la phase 1 a une solution réalisable
-        if (Math.abs(phase1Tableau[0][phase1Tableau[0].length - 1]) > 1e-10) {
-            return {
-                feasible: false,
-                optimal: false,
-                unbounded: false,
-                objectiveValue: null,
-                solution: null,
-                iterations: this.iterations
-            };
-        }
-        
-        // Phase 2: Résoudre le problème original
-        // Créer un nouveau tableau sans les variables artificielles
-        const { numVars, numSlackVars, numSurplusVars } = this.getProblemDimensions(phase1BasicVars);
-        const numArtificialVars = artificialVarIndices.length;
-        
-        let phase2Tableau = [];
-        for (let i = 0; i < phase1Tableau.length; i++) {
-            let row = [];
-            for (let j = 0; j < phase1Tableau[i].length - numArtificialVars; j++) {
-                row.push(phase1Tableau[i][j]);
-            }
-            row.push(phase1Tableau[i][phase1Tableau[i].length - 1]); // Ajouter la valeur RHS
-            phase2Tableau.push(row);
-        }
-        
-        // Réinitialiser la fonction objectif avec les coefficients originaux
-        phase2Tableau[0] = Array(phase2Tableau[0].length).fill(0);
-        for (let i = 0; i < objectiveCoefficients.length; i++) {
-            phase2Tableau[0][i] = objectiveType === 'maximize' ? -objectiveCoefficients[i] : objectiveCoefficients[i];
-        }
-        
-        // Éliminer les variables de base de la fonction objectif
-        for (let i = 0; i < phase1BasicVars.length; i++) {
-            const basicVarIndex = phase1BasicVars[i].index;
-            if (basicVarIndex < phase2Tableau[0].length - 1) { // Ignorer les variables artificielles
-                const basicVarCoeff = phase2Tableau[0][basicVarIndex];
-                if (basicVarCoeff !== 0) {
-                    for (let j = 0; j < phase2Tableau[0].length; j++) {
-                        phase2Tableau[0][j] -= basicVarCoeff * phase2Tableau[i + 1][j];
-                    }
-                }
-            }
-        }
-        
-        // Filtrer les variables artificielles des variables de base
-        let phase2BasicVars = phase1BasicVars.filter(v => v.type !== 'artificial');
-        
-        // Résoudre la phase 2
-        iteration = 0;
-        
-        do {
-            result = this.iterate(phase2Tableau, phase2BasicVars);
-            phase2Tableau = result.tableau;
-            phase2BasicVars = result.basicVars;
-            iteration++;
-            
-            // Stocker l'itération
-            if (!result.optimal && !result.unbounded) {
-                this.iterations.push({
-                    tableau: JSON.parse(JSON.stringify(phase2Tableau)),
-                    basicVars: JSON.parse(JSON.stringify(phase2BasicVars)),
-                    enteringVar: result.enteringVar,
-                    leavingVar: result.leavingVar,
-                    pivotRow: result.pivotRow,
-                    pivotCol: result.pivotCol,
-                    pivotElement: result.pivotElement,
-                    phase: 2
-                });
-            }
-            
-        } while (!result.optimal && !result.unbounded && iteration < maxIterations);
-        
-        // Extraire la solution
-        return this.extractSolution(phase2Tableau, phase2BasicVars, result);
-    }
+    // La méthode solveTwoPhase a été supprimée car nous n'utilisons plus la méthode des deux phases
 
     /**
      * Extrait la solution à partir du tableau final
@@ -606,14 +462,10 @@ class SimplexSolver {
         // Valeur de la fonction objectif
         let objectiveValue = tableau[0][tableau[0].length - 1];
         
-        // Toujours utiliser la valeur absolue pour s'assurer que la valeur est positive
-        // car dans la programmation linéaire, nous voulons généralement des valeurs positives
-        objectiveValue = Math.abs(objectiveValue);
-        
-        // Si c'est un problème de minimisation, nous devons nous assurer que le signe est correct
+        // Pour un problème de minimisation, nous devons inverser le signe
+        // car nous avons utilisé la formule: minimizer(Z) = -maximizer(-Z)
         if (this.objectiveType === 'minimize') {
-            // Dans certains cas, nous pourrions vouloir conserver le signe négatif pour la minimisation
-            // mais pour la cohérence de l'interface utilisateur, nous utilisons la valeur absolue
+            objectiveValue = -objectiveValue;
         }
         
         // Extraire les valeurs des variables de décision

@@ -20,9 +20,6 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="#" id="simplex-tab">Méthode du Simplex</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="dual-tab">Méthode de la Dualité</a>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -33,20 +30,16 @@
             <div class="col-12">
                 <div class="card shadow">
                     <div class="card-header bg-light">
-                        <h2 class="mb-0" id="method-title">Méthode du Simplex Tabulaire</h2>
+                        <h2 class="mb-0" id="method-title">Programmation Linéaire - Simplex</h2>
                     </div>
                     <div class="card-body">
                         <!-- Simplex Form -->
                         <div id="simplex-form">
                             <div class="mb-4">
                                 <h4>Fonction Objectif</h4>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="objectiveType" id="maximize" value="maximize" checked>
-                                    <label class="form-check-label" for="maximize">Maximiser</label>
-                                </div>
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="radio" name="objectiveType" id="minimize" value="minimize">
-                                    <label class="form-check-label" for="minimize">Minimiser</label>
+                                    <input class="form-check-input" type="hidden" name="objectiveType" id="maximize" value="maximize" checked>
+                                    <label class="form-check-label fw-bold">Maximiser</label>
                                 </div>
                                 
                                 <div class="objective-function mb-3">
@@ -77,7 +70,6 @@
                                             <select class="form-select constraint-type me-2">
                                                 <option value="<=">≤</option>
                                                 <option value="=">=</option>
-                                                <option value=">=">≥</option>
                                             </select>
                                             <input type="number" class="form-control rhs-input" placeholder="Valeur" step="any">
                                             <button type="button" class="btn btn-sm btn-danger ms-2 remove-constraint">
@@ -96,13 +88,9 @@
 
                             <div class="mb-4" id="method-selection" style="display: none;">
                                 <h4>Méthode de résolution</h4>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="solutionMethod" id="grand-m" value="grand-m" checked>
-                                    <label class="form-check-label" for="grand-m">Méthode du Grand M</label>
-                                </div>
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="radio" name="solutionMethod" id="two-phase" value="two-phase">
-                                    <label class="form-check-label" for="two-phase">Méthode des Deux Phases</label>
+                                    <input class="form-check-input" type="hidden" name="solutionMethod" id="grand-m" value="grand-m" checked>
+                                    <label class="form-check-label fw-bold">Méthode du Grand M</label>
                                 </div>
                             </div>
 
@@ -116,12 +104,11 @@
                         <!-- Dual Form (Initially Hidden) -->
                         <div id="dual-form" style="display: none;">
                             <div class="alert alert-info">
-                                <p>La méthode de la dualité permet de résoudre un problème de programmation linéaire en le transformant en son dual.</p>
+                                <p>La conversion en dual permet de transformer un problème de programmation linéaire en son dual.</p>
                                 <p>Entrez votre problème primal, puis cliquez sur "Convertir en Dual" pour voir la formulation duale.</p>
                             </div>
                             
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="button" class="btn btn-primary" id="solve-dual-button">Résoudre par Dualité</button>
                                 <button type="button" class="btn btn-outline-secondary" id="reset-dual-button">Réinitialiser</button>
                                 <button type="button" class="btn btn-outline-info" id="back-to-primal-button">Retour au Primal</button>
                             </div>

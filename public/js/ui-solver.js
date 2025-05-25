@@ -36,35 +36,7 @@ function solveProblem() {
     }
 }
 
-/**
- * Résout le problème avec la méthode de la dualité
- */
-function solveDualProblem() {
-    if (!currentProblem || !dualProblem) {
-        showError('Veuillez d\'abord convertir un problème primal en dual.');
-        return;
-    }
-    
-    try {
-        // Résoudre le problème avec la méthode de la dualité
-        const dualSolution = dualSolver.solve(
-            currentProblem.objectiveCoefficients,
-            currentProblem.constraints,
-            currentProblem.objectiveType
-        );
-        
-        // Afficher les résultats
-        displayDualResults(currentProblem, dualProblem, dualSolution);
-        
-        // Afficher la section des résultats
-        resultsSection.style.display = 'block';
-        
-        // Faire défiler jusqu'aux résultats
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-        showError('Une erreur est survenue lors de la résolution du problème dual: ' + error.message);
-    }
-}
+// La fonction solveDualProblem a été retirée pour ne garder que la conversion
 
 /**
  * Convertit le problème primal en dual
@@ -89,8 +61,10 @@ function convertToDual() {
         // Afficher le problème dual
         displayDualProblem(currentProblem, dualProblem);
         
-        // Passer à l'onglet dual
-        showDualForm();
+        // Afficher le formulaire dual
+        document.getElementById('simplex-form').style.display = 'none';
+        document.getElementById('dual-form').style.display = 'block';
+        document.getElementById('method-title').textContent = 'Conversion en Dual';
     } catch (error) {
         showError('Une erreur est survenue lors de la conversion en dual: ' + error.message);
     }

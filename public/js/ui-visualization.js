@@ -36,9 +36,9 @@ function displayDualProblem(primalProblem, dualProblem) {
             </div>
         </div>
         <div class="alert alert-info">
-            <h5>Théorème de la dualité</h5>
-            <p>Si le problème primal a une solution optimale, alors le problème dual a aussi une solution optimale, et les valeurs optimales des fonctions objectifs sont égales.</p>
-            <p>Les variables duales (Y) peuvent être interprétées comme les prix marginaux des ressources dans le problème primal.</p>
+            <h5>Conversion en Dual</h5>
+            <p>La conversion en dual permet de transformer un problème de programmation linéaire en son dual.</p>
+            <p>Les variables duales (Y) correspondent aux contraintes du problème primal, et les contraintes duales correspondent aux variables du problème primal.</p>
         </div>
     `;
     

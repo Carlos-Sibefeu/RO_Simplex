@@ -35,18 +35,18 @@ function initUI() {
     document.getElementById('solve-button').addEventListener('click', solveProblem);
     document.getElementById('reset-button').addEventListener('click', resetForm);
     document.getElementById('convert-dual-button').addEventListener('click', convertToDual);
-    document.getElementById('solve-dual-button').addEventListener('click', solveDualProblem);
     document.getElementById('reset-dual-button').addEventListener('click', resetForm);
     document.getElementById('back-to-primal-button').addEventListener('click', backToPrimal);
     
     // Onglets de navigation
     document.getElementById('simplex-tab').addEventListener('click', showSimplexForm);
-    document.getElementById('dual-tab').addEventListener('click', showDualForm);
     
     // Écouteurs pour les changements de type de contrainte
     document.querySelectorAll('.constraint-type').forEach(select => {
         select.addEventListener('change', checkMethodSelection);
     });
+    
+    // L'option Minimiser a été retirée, donc nous n'avons plus besoin de ces écouteurs
     
     // Initialiser les écouteurs pour le premier bouton d'ajout de variable de contrainte
     document.querySelector('.add-constraint-var').addEventListener('click', function() {
@@ -204,7 +204,6 @@ function addConstraint() {
     constraintType.innerHTML = `
         <option value="<=">≤</option>
         <option value="=">=</option>
-        <option value=">=">≥</option>
     `;
     constraintType.addEventListener('change', checkMethodSelection);
     
@@ -245,7 +244,8 @@ function checkMethodSelection() {
     
     // Parcourir tous les types de contraintes
     document.querySelectorAll('.constraint-type').forEach(select => {
-        if (select.value === '=' || select.value === '>=') {
+        // La méthode spéciale est nécessaire uniquement pour les contraintes '='
+        if (select.value === '=') {
             needsSpecialMethod = true;
         }
     });
@@ -254,13 +254,15 @@ function checkMethodSelection() {
     methodSelection.style.display = needsSpecialMethod ? 'block' : 'none';
 }
 
+// La fonction updateConstraintTypes a été supprimée car l'option Minimiser a été retirée
+
 /**
  * Collecte les données du formulaire pour créer un problème de programmation linéaire
  * @returns {Object} - Problème de programmation linéaire
  */
 function collectFormData() {
-    // Type d'objectif (maximiser ou minimiser)
-    const objectiveType = document.getElementById('maximize').checked ? 'maximize' : 'minimize';
+    // Type d'objectif (toujours maximiser)
+    const objectiveType = 'maximize';
     
     // Coefficients de la fonction objectif
     const objectiveInputs = objectiveFunctionContainer.querySelectorAll('.coefficient-input');
@@ -298,7 +300,7 @@ function collectFormData() {
     // Méthode de résolution
     let solutionMethod = 'standard';
     if (methodSelection.style.display !== 'none') {
-        solutionMethod = document.getElementById('grand-m').checked ? 'grand-m' : 'two-phase';
+        solutionMethod = 'grand-m';
     }
     
     return {
@@ -341,7 +343,6 @@ function resetForm() {
                 <select class="form-select constraint-type me-2">
                     <option value="<=">≤</option>
                     <option value="=">=</option>
-                    <option value=">=">≥</option>
                 </select>
                 <input type="number" class="form-control rhs-input" placeholder="Valeur" step="any">
             </div>
